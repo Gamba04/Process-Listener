@@ -121,31 +121,18 @@ public static class Program
 	{
 		string truncatedProcess = GetProcess(eventArgs);
 
-		if (TryGetKey(truncatedProcess, out string process) && !Exists(process))
+		foreach (string process in states.Keys)
 		{
-			states[process] = false;
+			if (process.StartsWith(truncatedProcess) && !Exists(process))
+			{
+				states[process] = false;
+			}
 		}
 	}
 
 	private static string GetProcess(EventArrivedEventArgs eventArgs)
 	{
 		return (string)eventArgs.NewEvent.Properties["ProcessName"].Value;
-	}
-
-	private static bool TryGetKey(string truncatedProcess, out string process)
-	{
-		foreach (string key in states.Keys)
-		{
-			if (key.StartsWith(truncatedProcess))
-			{
-				process = key;
-
-				return true;
-			}
-		}
-
-		process = null;
-		return false;
 	}
 
 	private static bool Exists(string process)
