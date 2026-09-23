@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"/>
+  <PropertyGroup>
+    <ProjectGuid>{64495C2F-CA90-4E90-86ED-E0AD83055B73}</ProjectGuid>
+    <AssemblyName>Process Listener</AssemblyName>
+    <RootNamespace>
+    </RootNamespace>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <LangVersion>8.0</LangVersion>
+    <OutputType>WinExe</OutputType>
+    <Optimize>true</Optimize>
+    <Deterministic>true</Deterministic>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Platform Condition="'%(Platform) == ''">x64</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>..\Build\</OutputPath>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+  <PropertyGroup>
+    <PostBuildEvent>rmdir /S /Q "$(ProjectDir)obj</PostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System"/>
+    <Reference Include="System.Management"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Source\Program.cs"/>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="icon.ico"/>
+  </ItemGroup>
+</Project>
