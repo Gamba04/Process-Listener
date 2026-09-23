@@ -7,7 +7,7 @@ using System.Threading;
 
 public static class Program
 {
-	private const string source = "Events.txt";
+	private const string config = "Config.txt";
 
 	private readonly static Dictionary<string, string> data = new Dictionary<string, string>();
 	private readonly static Dictionary<string, bool> states = new Dictionary<string, bool>();
@@ -54,9 +54,9 @@ public static class Program
 
 	private static bool TryInitData()
 	{
-		if (File.Exists(source))
+		if (File.Exists(config))
 		{
-			foreach (string line in File.ReadAllLines(source))
+			foreach (string line in File.ReadAllLines(config))
 			{
 				string[] contents = line.Split(':');
 
