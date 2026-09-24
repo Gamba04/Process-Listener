@@ -38,7 +38,7 @@ private static void StTrinaSleep()
 So basically it does nothing in the background except for the specific moments in which an event for a matching process is received.
 
 > [!Warning]
-> This program does not have any form of GUI or tray icon, it is purely a background process. You can verify whether it's running properly by looking for it in the Task Manager (or any similar tool). If the process does not immediately appear after launching it, it means that something has failed. Avoid having duplicate instances and make sure to terminate the process tree if you decide to close it (since it might have child processes running)
+> This program does not have any form of GUI or tray icon, it is purely a background process. You can verify whether it's running properly by looking for it in the Task Manager (or any similar tool). If the process does not immediately appear after launching it, it means that something has failed. You can restart the program by launching it again (which should automatically terminate the process tree of the previous instance), but you must manually terminate it yourself to close the current instance
 
 # Mechanism
 This project leverages the [Windows Management Instrumentation](https://learn.microsoft.com/en-us/windows/win32/wmisdk/wmi-start-page) [Operating System Events](https://learn.microsoft.com/en-us/windows/win32/cimwin32prov/operating-system-classes#operating-system-events) to receive events for process creation and termination.
