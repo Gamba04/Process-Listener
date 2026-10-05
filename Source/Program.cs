@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
 using System.Management;
 using System.Security.Principal;
@@ -11,8 +10,12 @@ public static class Program
 {
 	private const string config = "Config.txt";
 
-	private readonly static Dictionary<string, string> data = new Dictionary<string, string>();
-	private readonly static Dictionary<string, bool> states = new Dictionary<string, bool>();
+	private static readonly Dictionary<string, TargetData> data = new Dictionary<string, TargetData>();
+	private static readonly (char separator, TargetType type)[] separators = new (char, TargetType)[]
+	{
+		('>', TargetType.Trigger),
+		('|', TargetType.Linked)
+	};
 
 	private static void Main()
 	{
@@ -25,7 +28,17 @@ public static class Program
 
 	#region Init
 
-	private static bool TryInit() => IsAdministrator() && TryParseData();
+	private static bool TryInit()
+	{
+		if (!IsAdministrator())
+		{
+			RunAsAdministrator();
+
+			return false;
+		}
+
+		return TryParseData();
+	}
 
 	private static bool IsAdministrator()
 	{
@@ -35,23 +48,32 @@ public static class Program
 		return principal.IsInRole(WindowsBuiltInRole.Administrator);
 	}
 
+	private static void RunAsAdministrator()
+	{
+		string process = Process.GetCurrentProcess().ProcessName;
+
+		ProcessStartInfo startInfo = new ProcessStartInfo(process)
+		{
+			UseShellExecute = true,
+			Verb = "runas"
+		};
+
+		Process.Start(startInfo);
+	}
+
 	private static bool TryParseData()
 	{
 		if (File.Exists(config))
 		{
 			foreach (string line in File.ReadAllLines(config))
 			{
-				string[] contents = line.Split(':');
-
-				if (contents.Length == 2)
+				foreach ((char separator, TargetType type) in separators)
 				{
-					string process = contents[0].Trim();
-					string program = contents[1].Trim();
-
-					if (ValidateContents(process, program))
+					if (TryParseLine(line, separator, out string process, out string target))
 					{
-						data.Add(process, program);
-						states.Add(process, false);
+						data.Add(process, new TargetData(target, type));
+
+						break;
 					}
 				}
 			}
@@ -60,9 +82,33 @@ public static class Program
 		return data.Count > 0;
 	}
 
-	private static bool ValidateContents(params string[] contents)
+	private static bool TryParseLine(string line, char separator, out string process, out string target)
 	{
-		return !contents.Any(content => content == "");
+		process = null;
+		target = null;
+
+		string[] contents = line.Split(separator);
+
+		if (contents.Length == 2)
+		{
+			for (int i = 0; i < contents.Length; i++)
+			{
+				string value = contents[i].Trim();
+
+				if (value != "")
+				{
+					switch (i)
+					{
+						case 0: process = value; break;
+						case 1: target = value; break;
+					}
+				}
+				else return false;
+			}
+		}
+		else return false;
+
+		return true;
 	}
 
 	#endregion
@@ -131,7 +177,7 @@ public static class Program
 		}
 	}
 
-	private static void KillProcessTree(int id)
+	public static void KillProcessTree(int id)
 	{
 		SelectQuery query = new SelectQuery("Win32_Process", $"ParentProcessID = {id}");
 		ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
@@ -164,23 +210,21 @@ public static class Program
 	{
 		string process = eventArgs.GetProcessName();
 
-		if (states.TryGetValue(process, out bool isRunning) && !isRunning)
+		if (data.TryGetValue(process, out TargetData target))
 		{
-			Process.Start(data[process]);
-
-			states[process] = true;
+			target.OnProcessStart();
 		}
 	}
 
 	private static void OnProcessStop(object sender, EventArrivedEventArgs eventArgs)
 	{
-		string truncatedProcess = GetProcessName(eventArgs);
+		string truncatedProcess = eventArgs.GetProcessName();
 
-		foreach (string process in states.Keys)
+		foreach (string process in data.Keys)
 		{
 			if (process.StartsWith(truncatedProcess) && !Exists(process))
 			{
-				states[process] = false;
+				data[process].OnProcessStop();
 			}
 		}
 	}
