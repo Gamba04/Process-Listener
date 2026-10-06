@@ -33,7 +33,7 @@
     <Reference Include="System.Management" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Source\TargetData.cs" />
+    <Compile Include="Source\Target.cs" />
     <Compile Include="Source\Program.cs" />
     <Content Include="icon.ico" />
   </ItemGroup>

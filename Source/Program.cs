@@ -10,8 +10,8 @@ public static class Program
 {
 	private const string config = "Config.txt";
 
-	private static readonly Dictionary<string, TargetData> data = new Dictionary<string, TargetData>();
-	private static readonly (char separator, TargetType type)[] separators = new (char, TargetType)[]
+	private static readonly Dictionary<string, Target> data = new Dictionary<string, Target>();
+	private static readonly (char, TargetType)[] separators = new (char, TargetType)[]
 	{
 		('>', TargetType.Trigger),
 		('|', TargetType.Linked)
@@ -69,9 +69,9 @@ public static class Program
 			{
 				foreach ((char separator, TargetType type) in separators)
 				{
-					if (TryParseLine(line, separator, out string process, out string target))
+					if (TryParseLine(line, separator, out string process, out string path))
 					{
-						data.Add(process, new TargetData(target, type));
+						data.Add(process, new Target(path, type));
 
 						break;
 					}
@@ -82,10 +82,10 @@ public static class Program
 		return data.Count > 0;
 	}
 
-	private static bool TryParseLine(string line, char separator, out string process, out string target)
+	private static bool TryParseLine(string line, char separator, out string process, out string path)
 	{
 		process = null;
-		target = null;
+		path = null;
 
 		string[] contents = line.Split(separator);
 
@@ -100,7 +100,7 @@ public static class Program
 					switch (i)
 					{
 						case 0: process = value; break;
-						case 1: target = value; break;
+						case 1: path = value; break;
 					}
 				}
 				else return false;
@@ -210,7 +210,7 @@ public static class Program
 	{
 		string process = eventArgs.GetProcessName();
 
-		if (data.TryGetValue(process, out TargetData target))
+		if (data.TryGetValue(process, out Target target))
 		{
 			target.OnProcessStart();
 		}

@@ -7,16 +7,16 @@ public enum TargetType
 	Linked
 }
 
-public class TargetData
+public class Target
 {
-	public readonly string target;
-	public readonly TargetType type;
+	private readonly string path;
+	private readonly TargetType type;
 
 	private int id;
 
-	public TargetData(string target, TargetType type)
+	public Target(string path, TargetType type)
 	{
-		this.target = target;
+		this.path = path;
 		this.type = type;
 	}
 
@@ -48,7 +48,7 @@ public class TargetData
 
 	private int Start()
 	{
-		return Process.Start(target).Id;
+		return Process.Start(path).Id;
 	}
 
 	private void Stop()
